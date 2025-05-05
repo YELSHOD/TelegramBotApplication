@@ -15,6 +15,11 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
+    public boolean existsByName(String categoryName) {
+        return categoryRepository.findByName(categoryName).isPresent();
+    }
+
+
     public Category createRootCategory(String name) {
         if (categoryRepository.existsByName(name)) {
             throw new IllegalArgumentException("Category name already exists");

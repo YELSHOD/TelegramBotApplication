@@ -1,14 +1,12 @@
 package kz.pandev.bot.telegrambotapplication.command;
 
-import kz.pandev.bot.telegrambotapplication.repository.CategoryRepository;
 import kz.pandev.bot.telegrambotapplication.service.CategoryService;
 import lombok.RequiredArgsConstructor;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.bots.AbsSender;
-import org.telegram.telegrambots.meta.generics.TelegramBot;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor

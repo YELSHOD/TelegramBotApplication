@@ -1,10 +1,14 @@
 package kz.pandev.bot.telegrambotapplication.command;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+@Slf4j
+@Component
 public class StartCommand implements BotCommand {
 
 
@@ -20,8 +24,9 @@ public class StartCommand implements BotCommand {
 
         try {
             bot.execute(message);
+            log.debug("Команда /start успешно выполнена для чата {}", chatId);
         }catch (TelegramApiException e){
-            e.printStackTrace();
+            log.error("Ошибка при выполнении команды /start для чата {}: {}", chatId, e.getMessage());
         }
     }
 }

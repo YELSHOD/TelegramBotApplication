@@ -10,10 +10,10 @@ import java.util.List;
 
 
 @Entity
-@Table(name = "categories")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "categories")
 public class Category {
 
     @Id
