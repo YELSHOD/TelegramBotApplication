@@ -1,6 +1,6 @@
 package kz.pandev.bot.telegrambotapplication;
 
-import kz.pandev.bot.telegrambotapplication.bot.CategoryBot;
+import kz.pandev.bot.telegrambotapplication.bot.Bot;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +16,7 @@ public class TelegramBotApplication {
     }
 
     @Bean
-    public TelegramBotsApi telegramBotsApi(CategoryBot bot) throws TelegramApiException {
+    public TelegramBotsApi telegramBotsApi(Bot bot) throws TelegramApiException {
         TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
         botsApi.registerBot(bot);
         return botsApi;
