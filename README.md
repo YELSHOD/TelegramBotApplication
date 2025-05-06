@@ -104,8 +104,8 @@ cd TelegramBotApplication
 Создайте базу данных PostgreSQL (например, telegram_bot_db) и пропишите настройки 
 подключения в src/main/resources/application.properties:
 
-spring.datasource.url=jdbc:postgresql://localhost:5432/telegram_bot_db\n
-spring.datasource.username=your_username\n
+spring.datasource.url=jdbc:postgresql://localhost:5432/telegram_bot_db
+spring.datasource.username=your_username
 spring.datasource.password=your_password
 
 🤖 Шаг 4: Настройка Telegram бота
