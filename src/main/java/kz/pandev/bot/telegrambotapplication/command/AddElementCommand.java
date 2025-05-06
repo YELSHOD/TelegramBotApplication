@@ -51,7 +51,7 @@ public class AddElementCommand implements BotCommand {
                 }
 
             } else {
-                response = "Неправильный формат. Пример:\n/addElement Родитель Дочерний";
+                response = "Неправильный формат. Пример:\n/addElement {Родитель}\n/addElement {Родитель} {Дочерний}";
                 log.warn("Неправильный формат команды /addElement от чата {}", chatId);
             }
 

@@ -22,6 +22,10 @@ public class Category {
 
     private String name;
 
+    public Category(String name, Category parent) {
+        this.name = name;
+        this.parent = parent;
+    }
     // Ссылка на родительскую категорию (для построения иерархии)
     @ManyToOne
     private Category parent;
