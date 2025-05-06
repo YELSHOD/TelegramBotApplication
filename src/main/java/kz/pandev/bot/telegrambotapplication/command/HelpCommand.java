@@ -17,7 +17,7 @@ public class HelpCommand implements BotCommand {
 
     @Override
     public void execute(Update update, TelegramLongPollingBot bot) {
-        String helpText = """
+        String helpText = """ 
         Доступные команды:
         /start - Запуск бота
         /help - Справка
@@ -26,7 +26,7 @@ public class HelpCommand implements BotCommand {
         /viewTree - Показать дерево категорий
         /viewCategories - Показать список всех категорий
         /download - Скачать Excel документ с деревом категорий
-        """;
+        """; //Справочник /help
 
         SendMessage message = new SendMessage();
         message.setChatId(update.getMessage().getChatId().toString());

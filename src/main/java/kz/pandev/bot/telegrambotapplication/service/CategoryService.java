@@ -16,11 +16,12 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
+    // Проверка, существует ли категория с таким именем
     public boolean existsByName(String categoryName) {
         return categoryRepository.findByName(categoryName).isPresent();
     }
 
-
+    // Создание корневой категории (без родителя)
     public Category createRootCategory(String name) {
         if (categoryRepository.existsByName(name)) {
             throw new IllegalArgumentException("Название категории уже существует");
@@ -31,6 +32,7 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
+    // Создание дочерней категории — ищем родителя по имени и привязываем
     public Category createChildCategory(String parentName, String childName) {
         Category parent = categoryRepository.findByName(parentName)
                 .orElseThrow(() -> new IllegalArgumentException("Родительская категория не найдена"));
@@ -46,12 +48,14 @@ public class CategoryService {
         return categoryRepository.save(child);
     }
 
+    // Удаление категории по имени — сначала ищем, потом удаляем
     public void deleteCategoryByName(String name) {
         Category category = categoryRepository.findByName(name)
                 .orElseThrow(() -> new IllegalArgumentException("Категория не найдена"));
         categoryRepository.delete(category);
     }
 
+    // Получение всех категорий — используется при построении дерева
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
@@ -60,6 +64,7 @@ public class CategoryService {
         categoryRepository.save(category);
     }
 
+    // Поиск категории по имени — возвращается Optional
     public Optional<Category> findByName(String name) {
         return categoryRepository.findByName(name);
     }

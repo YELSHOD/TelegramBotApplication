@@ -22,9 +22,14 @@ public class Category {
 
     private String name;
 
+    // Ссылка на родительскую категорию (для построения иерархии)
     @ManyToOne
     private Category parent;
 
+    // Список дочерних категорий — связь один-ко-многим.
+    // mappedBy = "parent" указывает, что владеющая сторона — поле parent
+    // CascadeType.ALL — каскадируем все операции (persist, merge, remove и т.д.)
+    // orphanRemoval = true — если убираем дочерний элемент из списка, он удаляется из БД
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> children = new ArrayList<>();
 }

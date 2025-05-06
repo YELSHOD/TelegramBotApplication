@@ -14,12 +14,14 @@ public class TreeBuilder {
 
     private final CategoryRepository categoryRepository;
 
+    // Строим дерево начиная с родительского ID (null — корень)
     public TreeNode buildTree(Long parentId) {
         List<Category> rootCategories = categoryRepository.findByParentId(parentId)
                 .stream()
                 .sorted(Comparator.comparing(Category::getName))
                 .toList();
 
+        // Корневой узел дерева (не из БД, просто заголовок)
         TreeNode root = new TreeNode("Категории в структурированном виде дерева");
 
         for (Category category : rootCategories) {
@@ -30,6 +32,7 @@ public class TreeBuilder {
         return root;
     }
 
+    // Рекурсивное построение поддерева для конкретной категории
     private TreeNode buildSubTree(Category category) {
         TreeNode node = new TreeNode(category.getName());
 
@@ -38,6 +41,7 @@ public class TreeBuilder {
                 .sorted(Comparator.comparing(Category::getName))
                 .toList();
 
+        // Углубляемся в дерево
         for (Category child : children) {
             node.getChildren().add(buildSubTree(child));
         }

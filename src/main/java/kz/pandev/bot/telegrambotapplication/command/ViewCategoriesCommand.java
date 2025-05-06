@@ -28,20 +28,24 @@ public class ViewCategoriesCommand implements BotCommand {
         String chatId = update.getMessage().getChatId().toString();
 
         try {
+            // Получаю список всех категорий и фильтрую только корневые (у которых нет родителя)
             String response = categoryService.getAllCategories().stream()
-                    .filter(category -> category.getParent() == null)  // Только корневые
-                    .map(Category::getName)
-                    .collect(Collectors.joining("\n"));
+                    .filter(category -> category.getParent() == null)      // только root-категории
+                    .map(Category::getName)                                         // оставляю только имя категории
+                    .collect(Collectors.joining("\n"));                     // объединяю в строку через перенос строки
 
+            // Если ничего не найдено, отправляю соответствующее сообщение
             if (response.isEmpty()) {
                 response = "Корневые категории не найдены.";
             }
 
+            // Отправляю пользователю список категорий
             bot.execute(SendMessage.builder()
                     .chatId(chatId)
                     .text(response)
                     .build());
 
+            // Логирую успешное выполнение команды
             log.info("Команда /viewCategories успешно выполнена для чата {}", chatId);
 
         } catch (Exception e) {

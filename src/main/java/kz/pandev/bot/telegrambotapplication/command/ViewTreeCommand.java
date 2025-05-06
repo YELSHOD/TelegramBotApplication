@@ -29,13 +29,18 @@ public class ViewTreeCommand implements BotCommand {
         String chatId = update.getMessage().getChatId().toString();
 
         try {
+            // Строю дерево категорий с помощью TreeBuilder (null — корень)
             TreeNode root = treeBuilder.buildTree(null);
+
+            // Форматирую дерево в читаемый текст для Telegram
             String treeString = formatTreeWithParentIndicator(root, 0);
 
+            // Отправляю сообщение с деревом
             SendMessage message = new SendMessage(chatId, treeString);
             bot.execute(message);
 
         } catch (Exception e) {
+            // Если что-то пошло не так — логирую и сообщаю пользователю
             log.error("Ошибка при построении дерева: {}", e.getMessage());
             try {
                 bot.execute(new SendMessage(chatId, "Ошибка при построении дерева категорий."));
@@ -55,11 +60,12 @@ public class ViewTreeCommand implements BotCommand {
             sb.append(indent).append("◦ ").append(node.getName()).append("\n");
         }
 
-        // Sort по алфавиту | yel
+        // Сортировка дочерних узлов по алфавиту (игнорируем регистр)
         List<TreeNode> sortedChildren = node.getChildren().stream()
                 .sorted(Comparator.comparing(TreeNode::getName, String.CASE_INSENSITIVE_ORDER))
                 .toList();
 
+        // Рекурсивный вызов для каждого потомка
         for (TreeNode child : sortedChildren) {
             sb.append(formatTreeWithParentIndicator(child, level + 1));
         }
