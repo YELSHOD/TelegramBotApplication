@@ -1,0 +1,47 @@
+package kz.pandev.bot.telegrambotapplication.util;
+
+import kz.pandev.bot.telegrambotapplication.model.Category;
+import kz.pandev.bot.telegrambotapplication.repository.CategoryRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.Comparator;
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
+public class TreeBuilder {
+
+    private final CategoryRepository categoryRepository;
+
+    public TreeNode buildTree(Long parentId) {
+        List<Category> rootCategories = categoryRepository.findByParentId(parentId)
+                .stream()
+                .sorted(Comparator.comparing(Category::getName))
+                .toList();
+
+        TreeNode root = new TreeNode("Категории в структурированном виде дерева");
+
+        for (Category category : rootCategories) {
+            TreeNode childNode = buildSubTree(category);
+            root.getChildren().add(childNode);
+        }
+
+        return root;
+    }
+
+    private TreeNode buildSubTree(Category category) {
+        TreeNode node = new TreeNode(category.getName());
+
+        List<Category> children = categoryRepository.findByParentId(category.getId())
+                .stream()
+                .sorted(Comparator.comparing(Category::getName))
+                .toList();
+
+        for (Category child : children) {
+            node.getChildren().add(buildSubTree(child));
+        }
+
+        return node;
+    }
+}
