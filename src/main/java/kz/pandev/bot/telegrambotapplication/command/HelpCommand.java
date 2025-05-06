@@ -26,6 +26,7 @@ public class HelpCommand implements BotCommand {
         /viewTree - Показать дерево категорий
         /viewCategories - Показать список всех категорий
         /download - Скачать Excel документ с деревом категорий
+        /upload -  Импорт Excel документ с деревом категорий и сохранит все элементы в базе данных
         """;
 
         SendMessage message = new SendMessage();
