@@ -8,12 +8,11 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AddElementCommand implements BotCommand {
 
-    private final AbsSender sender;
-    private final CategoryRepository categoryRepository;
     private final CategoryService categoryService;
 
     @Override
@@ -25,33 +24,51 @@ public class AddElementCommand implements BotCommand {
     public void execute(Update update, TelegramLongPollingBot bot) {
         String messageText = update.getMessage().getText();
         String chatId = update.getMessage().getChatId().toString();
-        String[] parts = messageText.split(" ");
+        String[] parts = messageText.split(" "); // Разделяем на части команду и аргументы
 
         try {
             String response;
 
+            // Если только одно слово после команды, то добавляем корневую категорию
             if (parts.length == 2) {
                 categoryService.createRootCategory(parts[1]);
-                response = "Корневая категория добавлена.";
+                response = "Корневая категория '" + parts[1] + "' добавлена.";
+                log.debug("Корневая категория '{}' добавлена.", parts[1]);
+
+                // Если два слова, то добавляем дочернюю категорию
             } else if (parts.length == 3) {
-                categoryService.createChildCategory(parts[1], parts[2]);
-                response = "Дочерняя категория добавлена.";
+                String parentName = parts[1];
+                String childName = parts[2];
+
+                // Проверяем, существует ли родительская категория
+                if (categoryService.existsByName(parentName)) {
+                    categoryService.createChildCategory(parentName, childName);
+                    response = "Дочерняя категория '" + childName + "' для родительской '" + parentName + "' добавлена.";
+                    log.debug("Дочерняя категория '{}' для родительской '{}' добавлена.", childName, parentName);
+                } else {
+                    response = "Родительская категория '" + parentName + "' не найдена.";
+                    log.warn("Родительская категория '{}' не найдена.", parentName);
+                }
+
             } else {
                 response = "Неправильный формат. Пример:\n/addElement Родитель Дочерний";
+                log.warn("Неправильный формат команды /addElement от чата {}", chatId);
             }
 
-            sender.execute(SendMessage.builder()
+            bot.execute(SendMessage.builder()
                     .chatId(chatId)
                     .text(response)
                     .build());
 
         } catch (Exception e) {
+            log.error("Ошибка при выполнении команды /addElement для чата {}: {}", chatId, e.getMessage());
             try {
-                sender.execute(SendMessage.builder()
+                bot.execute(SendMessage.builder()
                         .chatId(chatId)
                         .text("Ошибка: " + e.getMessage())
                         .build());
             } catch (Exception ex) {
+                log.error("Ошибка при отправке сообщения об ошибке для чата {}: {}", chatId, ex.getMessage());
                 ex.printStackTrace();
             }
         }
