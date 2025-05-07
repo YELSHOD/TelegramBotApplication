@@ -1,5 +1,6 @@
 package kz.pandev.bot.telegrambotapplication.command;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -8,8 +9,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 public class UnknownCommand implements BotCommand {
 
@@ -21,35 +24,55 @@ public class UnknownCommand implements BotCommand {
     @Override
     public void execute(Update update, TelegramLongPollingBot bot) {
         String chatId = update.getMessage().getChatId().toString();
+        String userMessage = update.getMessage().getText();
+        String userName = update.getMessage().getFrom().getUserName();
+
+        log.info("Получено сообщение от пользователя: {} | chatId: {} | текст: {}", userName, chatId, userMessage);
 
         String responseText = """
         ❗ Неизвестная команда.
-        Попробуйте /help для списка доступных команд.
+        Пожалуйста, воспользуйтесь кнопками ниже или введите /help.
         """;
 
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(responseText);
 
-        // Добавим кнопки
+        // Клавиатура
         ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
-        keyboard.setResizeKeyboard(true); // адаптивная высота
+        keyboard.setResizeKeyboard(true);
+        keyboard.setOneTimeKeyboard(false);
 
-        KeyboardRow row = new KeyboardRow();
-        row.add("/help");
-        row.add("/start");
-        row.add("/addElement");
-        row.add("/removeElement");
-        row.add("/viewTree");
-        row.add("/download");
+        List<KeyboardRow> rows = new ArrayList<>();
 
-        keyboard.setKeyboard(List.of(row));
+        KeyboardRow row1 = new KeyboardRow();
+        row1.add("📘 Справка");
+        row1.add("➕ Добавить элемент");
+
+        KeyboardRow row2 = new KeyboardRow();
+        row2.add("🌳 Дерево категорий");
+        row2.add("➖ Удалить элемент");
+
+        KeyboardRow row3 = new KeyboardRow();
+        row3.add("👁 Просмотр категорий");
+        row3.add("📊 Импорт Excel");
+
+        KeyboardRow row4 = new KeyboardRow();
+        row4.add("📥 Скачать Excel");
+
+        rows.add(row1);
+        rows.add(row2);
+        rows.add(row3);
+        rows.add(row4);
+
+        keyboard.setKeyboard(rows);
         message.setReplyMarkup(keyboard);
 
         try {
             bot.execute(message);
+            log.info("Пользователю {} отправлено сообщение с клавиатурой", userName);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.error("Ошибка при отправке сообщения пользователю {}", userName, e);
         }
     }
 

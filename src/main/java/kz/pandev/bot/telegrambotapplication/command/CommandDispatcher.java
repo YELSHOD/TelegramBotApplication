@@ -34,22 +34,40 @@ public class CommandDispatcher {
 
         Message message = update.getMessage();
 
-        // Если текстовая команда
+        // Если текстовая команда или нажатие кнопки
         if (message.hasText()) {
-            String text = message.getText();
-            BotCommand command = commandMap.get(text.split(" ")[0]);
+            String text = message.getText().trim();
+
+            // Маппинг пользовательских кнопок на команды
+            String mappedCommand = switch (text) {
+                case "📘 Справка" -> "/help";
+                case "➕ Добавить элемент" -> "/addElement";
+                case "➖ Удалить элемент" -> "/removeElement";
+                case "🌳 Дерево категорий" -> "/viewTree";
+                case "📥 Скачать Excel" -> "/download";
+                case "📊 Импорт Excel" -> "/upload";
+                case "👁 Просмотр категорий" -> "/viewCategories";
+                default -> text.split(" ")[0]; // если это обычная команда, берем первую часть
+            };
+
+            // Проверка команды
+            BotCommand command = commandMap.get(mappedCommand);
             if (command != null) {
                 command.execute(update, bot);
             } else {
+                // Проверка для неизвестных команд
                 BotCommand unknownCommand = commandMap.get("unknown");
                 if (unknownCommand != null) {
                     unknownCommand.execute(update, bot);
+                } else {
+                    // Если команда "unknown" не найдена в мапе, можно вывести стандартное сообщение
+                    send(bot, update.getMessage().getChatId().toString(), "❗ Неизвестная команда. Пожалуйста, используйте /help для получения помощи.");
                 }
             }
             return;
         }
 
-        // Если просто прислали файл — обрабатываем Excel
+        // Если прислали файл — обрабатываем Excel
         if (message.hasDocument()) {
             Document document = message.getDocument();
             String fileName = document.getFileName();
