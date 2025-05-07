@@ -1,11 +1,13 @@
 package kz.pandev.bot.telegrambotapplication.service;
 
+import kz.pandev.bot.telegrambotapplication.dto.CategoryDto;
 import kz.pandev.bot.telegrambotapplication.model.Category;
 import kz.pandev.bot.telegrambotapplication.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
@@ -58,6 +60,17 @@ public class CategoryService {
     // Получение всех категорий — используется при построении дерева
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
+    }
+
+    public List<CategoryDto> getAllCategoryDtos() {
+        List<Category> categories = categoryRepository.findAll();
+
+        return categories.stream().map(category -> {
+            CategoryDto dto = new CategoryDto();
+            dto.setName(category.getName());
+            dto.setParent(category.getParent() == null); // Родитель — если нет родителя
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     public void save(Category category) {

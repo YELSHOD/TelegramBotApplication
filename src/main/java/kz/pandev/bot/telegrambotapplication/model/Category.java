@@ -22,10 +22,6 @@ public class Category {
 
     private String name;
 
-    public Category(String name, Category parent) {
-        this.name = name;
-        this.parent = parent;
-    }
     // Ссылка на родительскую категорию (для построения иерархии)
     @ManyToOne
     private Category parent;
@@ -36,4 +32,15 @@ public class Category {
     // orphanRemoval = true — если убираем дочерний элемент из списка, он удаляется из БД
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> children = new ArrayList<>();
+
+
+    // Метод для проверки, является ли категория родительской
+    public boolean isParent() {
+        return parent == null && !children.isEmpty(); // Если нет родителя и есть дочерние категории
+    }
+
+    public Category(String name, Category parent) {
+        this.name = name;
+        this.parent = parent;
+    }
 }
