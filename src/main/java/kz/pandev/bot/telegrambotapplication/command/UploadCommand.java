@@ -56,9 +56,9 @@ public class UploadCommand implements BotCommand {
                         Parent Category | Child Category
 
                         Пример:
-                        Еда     | Пицца
-                        Еда     | Бургер
-                        Телефон | Айфон
+                        Машины  | Mercedes-Benz
+                        Машины  | Porsche
+                        Телефон  | Iphone
                         """);
             } catch (Exception e) {
                 log.error("Ошибка при отправке шаблона Excel", e);

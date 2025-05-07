@@ -1,4 +1,4 @@
-Telegram Bot Application
+Telegram Bot Application @categoryTree10_bot
 
 Возможности бота
 Бот предназначен для работы с категориями, реализован в виде иерархического дерева. Основные функции:

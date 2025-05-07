@@ -37,37 +37,37 @@ public class DownloadCommand implements BotCommand {
     public void execute(Update update, TelegramLongPollingBot bot) {
         String chatId = update.getMessage().getChatId().toString();
 
-        // Получаем список категорий
         List<Category> categories = categoryService.getAllCategories();
 
-        // Генерация Excel
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Categories");
 
-            // Заголовки столбцов
+            // Заголовки
             Row headerRow = sheet.createRow(0);
-            headerRow.createCell(0).setCellValue("ID");
-            headerRow.createCell(1).setCellValue("Name");
-            headerRow.createCell(2).setCellValue("Parent");
+            headerRow.createCell(0).setCellValue("Name");
+            headerRow.createCell(1).setCellValue("Parent");
+            headerRow.createCell(2).setCellValue("Note");
 
-            // Заполнение данными
             int rowNum = 1;
             for (Category category : categories) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(category.getId());
-                row.createCell(1).setCellValue(category.getName());
-                row.createCell(2).setCellValue(category.getParent() != null ? category.getParent().getName() : "Root");
+                row.createCell(0).setCellValue(category.getName());
+
+                String parentName = category.getParent() != null ? category.getParent().getName() : "Root";
+                row.createCell(1).setCellValue(parentName);
+
+                if ("Root".equals(parentName)) {
+                    row.createCell(2).setCellValue("🔹 Категория верхнего уровня (без родителя)");
+                }
             }
 
             workbook.write(outputStream);
             byte[] bytes = outputStream.toByteArray();
 
-            // Создаем InputFile из байтового массива
             InputFile inputFile = new InputFile();
             inputFile.setMedia(new ByteArrayInputStream(bytes), "categories.xlsx");
 
-            // Отправляем файл в чат
             SendDocument sendDocument = new SendDocument();
             sendDocument.setChatId(chatId);
             sendDocument.setDocument(inputFile);
