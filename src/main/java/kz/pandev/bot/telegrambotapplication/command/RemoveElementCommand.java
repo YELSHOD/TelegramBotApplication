@@ -25,7 +25,7 @@ public class RemoveElementCommand implements BotCommand {
 
     @Override
     public String getCommand() {
-        return "/removeElement";
+        return "/removeelement";
     }
 
     @Override
@@ -67,7 +67,7 @@ public class RemoveElementCommand implements BotCommand {
                         sendText(bot, chatId, "❌ Ошибка: " + e.getMessage());
                     }
                 } else {
-                    sendText(bot, chatId, "❗ Неправильный формат. Пример: /removeElement НазваниеКатегории");
+                    sendText(bot, chatId, "❗ Неправильный формат. Пример: /removeelement НазваниеКатегории");
                 }
             }
         }

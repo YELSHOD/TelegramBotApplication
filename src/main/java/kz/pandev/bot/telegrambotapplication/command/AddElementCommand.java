@@ -17,7 +17,7 @@ public class AddElementCommand implements BotCommand {
 
     @Override
     public String getCommand() {
-        return "/addElement";
+        return "/addelement";
     }
 
     @Override
@@ -26,8 +26,8 @@ public class AddElementCommand implements BotCommand {
         String chatId = update.getMessage().getChatId().toString();
         String[] parts = fullText.split("\\s+");
 
-        // Убедимся, что первый элемент — это /addElement
-        if (!parts[0].equals("/addElement")) {
+        // Убедимся, что первый элемент — это /addelement
+        if (!parts[0].equals("/addelement")) {
             // Примитивная защита — если пришло нечто типа "➕ Добавить элемент"
             if (fullText.equals("➕ Добавить элемент")) {
                 // Просто показываем инструкцию
@@ -71,10 +71,10 @@ public class AddElementCommand implements BotCommand {
                 ❌ Неправильный формат команды.
                 
                 Используйте:
-                /addElement Категория
-                /addElement Родитель Дочерняя
+                /addelement Категория
+                /addelement Родитель Дочерняя
                 """;
-                log.warn("Неверный формат команды /addElement от пользователя {}", chatId);
+                log.warn("Неверный формат команды /addelement от пользователя {}", chatId);
             }
 
             bot.execute(SendMessage.builder()
@@ -83,7 +83,7 @@ public class AddElementCommand implements BotCommand {
                     .build());
 
         } catch (Exception e) {
-            log.error("Ошибка при выполнении команды /addElement для чата {}: {}", chatId, e.getMessage());
+            log.error("Ошибка при выполнении команды /addelement для чата {}: {}", chatId, e.getMessage());
             sendError(bot, chatId, "❌ Ошибка: " + e.getMessage());
         }
     }
@@ -92,12 +92,12 @@ public class AddElementCommand implements BotCommand {
         String response = """
         ℹ️ Чтобы добавить категорию, используйте один из форматов:
         
-        ➕ /addElement {ИмяКатегории} – создать корневую категорию
-        ➕ /addElement {Родитель} {ИмяКатегории} – создать дочернюю категорию
+        ➕ /addelement {ИмяКатегории} – создать корневую категорию
+        ➕ /addelement {Родитель} {ИмяКатегории} – создать дочернюю категорию
         
         📌 Примеры:
-        /addElement Продукты
-        /addElement Продукты Овощи
+        /addelement Продукты
+        /addelement Продукты Овощи
         """;
 
         try {

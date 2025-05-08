@@ -20,7 +20,7 @@ public class ViewCategoriesCommand implements BotCommand {
 
     @Override
     public String getCommand() {
-        return "/viewCategories";
+        return "/viewcategories";
     }
 
     @Override
@@ -46,10 +46,10 @@ public class ViewCategoriesCommand implements BotCommand {
                     .build());
 
             // Логирую успешное выполнение команды
-            log.info("Команда /viewCategories успешно выполнена для чата {}", chatId);
+            log.info("Команда /viewcategories успешно выполнена для чата {}", chatId);
 
         } catch (Exception e) {
-            log.error("Ошибка при выполнении команды /viewCategories для чата {}: {}", chatId, e.getMessage());
+            log.error("Ошибка при выполнении команды /viewcategories для чата {}: {}", chatId, e.getMessage());
             try {
                 bot.execute(SendMessage.builder()
                         .chatId(chatId)

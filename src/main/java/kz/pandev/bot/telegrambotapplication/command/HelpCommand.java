@@ -21,13 +21,12 @@ public class HelpCommand implements BotCommand {
         Доступные команды:
         /start - Запуск бота
         /help - Справка
-        /addElement - Добавить элемент
-        /removeElement - Удалить элемент
-        /viewTree - Показать дерево категорий
-        /viewCategories - Показать список всех категорий
+        /addelement - Добавить элемент
+        /removeelement - Удалить элемент
+        /viewtree - Показать дерево категорий
+        /viewcategories - Показать список всех категорий
         /download - Скачать Excel документ с деревом категорий
-        /upload  Импортировать Excel документ с деревом категорий и сохраняет все
-        элементы в базе данных
+        /upload  Импортировать Excel документ с деревом категорий и сохраняет все элементы в базе данных
         """; //Справочник /help
 
         SendMessage message = new SendMessage();

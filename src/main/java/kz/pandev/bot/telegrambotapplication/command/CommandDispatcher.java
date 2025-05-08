@@ -55,12 +55,12 @@ public class CommandDispatcher {
 
             String mappedCommand = switch (text) {
                 case "📘 Справка" -> "/help";
-                case "➕ Добавить элемент" -> "/addElement";
-                case "➖ Удалить элемент" -> "/removeElement";
-                case "🌳 Дерево категорий" -> "/viewTree";
+                case "➕ Добавить элемент" -> "/addelement";
+                case "➖ Удалить элемент" -> "/removeelement";
+                case "🌳 Дерево категорий" -> "/viewtree";
                 case "📥 Скачать Excel" -> "/download";
                 case "📊 Импорт Excel" -> "/upload";
-                case "👁 Просмотр категорий" -> "/viewCategories";
+                case "👁 Просмотр категорий" -> "/viewcategories";
                 default -> text.split(" ")[0];
             };
 
@@ -97,7 +97,7 @@ public class CommandDispatcher {
         BotCommand command = null;
 
         if (data.startsWith("DELETE:") || data.startsWith("PAGE:")) {
-            command = commandMap.get("/removeElement");
+            command = commandMap.get("/removeelement");
         } else {
             command = commandMap.get(data);
         }

@@ -21,7 +21,7 @@ public class ViewTreeCommand implements BotCommand {
 
     @Override
     public String getCommand() {
-        return "/viewTree";
+        return "/viewtree";
     }
 
     @Override
