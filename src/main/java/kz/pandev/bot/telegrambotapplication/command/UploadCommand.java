@@ -53,12 +53,13 @@ public class UploadCommand implements BotCommand {
                         📤 Отправьте сюда Excel-файл с категориями.
 
                         Формат таблицы:
-                        Parent Category | Child Category
+                        Категория | Подкатегория
 
                         Пример:
                         Машины  | Mercedes-Benz
                         Машины  | Porsche
-                        Телефон  | Iphone
+                        Телефон   | Iphone
+                        Телефон   | Samsung
                         """);
             } catch (Exception e) {
                 log.error("Ошибка при отправке шаблона Excel", e);

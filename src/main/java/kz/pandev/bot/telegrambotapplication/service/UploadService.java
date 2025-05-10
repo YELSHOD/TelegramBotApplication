@@ -4,7 +4,9 @@ import kz.pandev.bot.telegrambotapplication.model.Category;
 import kz.pandev.bot.telegrambotapplication.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -57,13 +59,15 @@ public class UploadService {
                 int lastProgress = -1;
 
                 List<String> duplicates = new ArrayList<>();
+                List<String> addedCategories = new ArrayList<>(); // Список добавленных категорий
 
                 for (Row row : sheet) {
-                    if (row.getRowNum() == 0) continue;
+                    if (row.getRowNum() == 0) continue; // Пропускаем заголовок
 
                     String parentName = row.getCell(0).getStringCellValue().trim();
                     String childName = row.getCell(1).getStringCellValue().trim();
 
+                    // Находим или создаём родительскую категорию
                     Category parent = categoryRepository.findByName(parentName)
                             .orElseGet(() -> {
                                 Category newParent = new Category(parentName, null);
@@ -72,11 +76,13 @@ public class UploadService {
                                 return newParent;
                             });
 
+                    // Добавляем подкатегорию
                     if (!childName.isEmpty()) {
                         Optional<Category> existingChild = categoryRepository.findByName(childName);
                         if (existingChild.isEmpty()) {
                             categoryRepository.save(new Category(childName, parent));
                             log.info("Создана дочерняя категория: {} -> {}", parentName, childName);
+                            addedCategories.add("• " + parentName + " -> " + childName); // Добавляем в список добавленных категорий
                         } else {
                             log.info("Пропущена уже существующая категория: {}", childName);
                             duplicates.add(childName);
@@ -118,6 +124,19 @@ public class UploadService {
                             .build());
                 }
 
+                // Сообщаем о добавленных категориях
+                if (!addedCategories.isEmpty()) {
+                    StringBuilder addedCategoriesMsg = new StringBuilder("✅ Добавленные категории и подкатегории:\n");
+                    for (String addedCategory : addedCategories) {
+                        addedCategoriesMsg.append(addedCategory).append("\n");
+                    }
+
+                    bot.execute(SendMessage.builder()
+                            .chatId(chatId)
+                            .text(addedCategoriesMsg.toString())
+                            .build());
+                }
+
             }
 
         } catch (Exception e) {
@@ -133,18 +152,51 @@ public class UploadService {
         }
     }
 
-
-
+    // Отправка шаблона
     public void sendExcelTemplate(String chatId, TelegramLongPollingBot bot) {
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
             var sheet = workbook.createSheet("Categories");
-            var header = sheet.createRow(0);
-            header.createCell(0).setCellValue("Parent Category");
-            header.createCell(1).setCellValue("Child Category");
 
-            var example = sheet.createRow(1);
-            example.createCell(0).setCellValue("Food");
-            example.createCell(1).setCellValue("Fruits");
+            sheet.setColumnWidth(0, 20 * 256); // Столбец A
+            sheet.setColumnWidth(1, 20 * 256); // Столбец B
+            sheet.setColumnWidth(2, 20 * 256); // Столбец C (пустой)
+
+            var headerFont = workbook.createFont();
+            headerFont.setBold(true); // Жирный шрифт
+            var headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+            // Стиль для обычных ячеек (центрирование)
+            var cellStyle = workbook.createCellStyle();
+            cellStyle.setAlignment(HorizontalAlignment.CENTER);
+            cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+            // Заголовок (первая строка)
+            var header = sheet.createRow(0);
+            header.setHeightInPoints(25); // Фиксированная высота
+            header.createCell(0).setCellValue("Категория");
+            header.getCell(0).setCellStyle(headerStyle); // Применяем жирный стиль
+            header.createCell(1).setCellValue("Подкатегория");
+            header.getCell(1).setCellStyle(headerStyle);
+            header.createCell(2).setCellValue(""); // Пустая ячейка
+            header.getCell(2).setCellStyle(headerStyle); // Стиль для пустой ячейки заголовка
+
+            // Данные (остальные строки)
+            String[][] exampleData = {
+                    {"Напитки", "Соса-Соlа", ""},
+                    {"Напитки", "Fanta", ""}
+            };
+
+            for (int i = 0; i < exampleData.length; i++) {
+                var row = sheet.createRow(i + 1); // Начинаем со второй строки
+                row.setHeightInPoints(25); // Фиксированная высота
+                for (int j = 0; j < exampleData[i].length; j++) {
+                    row.createCell(j).setCellValue(exampleData[i][j]);
+                    row.getCell(j).setCellStyle(cellStyle); // Центрирование
+                }
+            }
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
@@ -153,13 +205,11 @@ public class UploadService {
             bot.execute(SendDocument.builder()
                     .chatId(chatId)
                     .document(new InputFile(inputStream, "category_template.xlsx"))
-                    .caption("📎 Вот шаблон для загрузки категорий.")
+                    .caption("\uD83D\uDCCE Вот шаблон для загрузки категорий.")
                     .build());
 
-            log.info("Шаблон Excel отправлен пользователю: chatId={}", chatId);
-
         } catch (Exception e) {
-            log.error("Ошибка при отправке шаблона Excel", e);
+            log.error("Ошибка при создании шаблона", e);
         }
     }
 }

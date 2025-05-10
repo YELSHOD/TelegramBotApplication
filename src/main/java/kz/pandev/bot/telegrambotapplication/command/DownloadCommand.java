@@ -37,30 +37,21 @@ public class DownloadCommand implements BotCommand {
     public void execute(Update update, TelegramLongPollingBot bot) {
         String chatId = update.getMessage().getChatId().toString();
 
-        List<Category> categories = categoryService.getAllCategories();
+        List<Category> allCategories = categoryService.getAllCategories();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try (Workbook workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet("Categories");
+            Sheet sheet = workbook.createSheet("Категории");
 
-            // Заголовки
             Row headerRow = sheet.createRow(0);
-            headerRow.createCell(0).setCellValue("Name");
-            headerRow.createCell(1).setCellValue("Parent");
-            headerRow.createCell(2).setCellValue("Note");
+            headerRow.createCell(0).setCellValue("Название");
 
-            int rowNum = 1;
-            for (Category category : categories) {
-                Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(category.getName());
+            int[] rowNum = {1}; // Используем массив для передачи по ссылке в рекурсию
 
-                String parentName = category.getParent() != null ? category.getParent().getName() : "Root";
-                row.createCell(1).setCellValue(parentName);
-
-                if ("Root".equals(parentName)) {
-                    row.createCell(2).setCellValue("🔹 Категория верхнего уровня (без родителя)");
-                }
-            }
+            // Старт с корневых категорий
+            allCategories.stream()
+                    .filter(c -> c.getParent() == null)
+                    .forEach(c -> writeCategoryRow(sheet, c, 0, rowNum, allCategories));
 
             workbook.write(outputStream);
             byte[] bytes = outputStream.toByteArray();
@@ -76,12 +67,34 @@ public class DownloadCommand implements BotCommand {
             bot.execute(sendDocument);
 
         } catch (IOException | TelegramApiException e) {
-            log.error("Ошибка при генерации или отправке документа для чата {}: {}", chatId, e.getMessage());
+            log.error("Ошибка при генерации или отправке Excel: {}", e.getMessage());
             try {
-                bot.execute(new SendMessage(chatId, "Произошла ошибка при генерации документа."));
+                bot.execute(new SendMessage(chatId, "⚠️ Ошибка при генерации Excel-файла."));
             } catch (TelegramApiException ex) {
-                log.error("Ошибка при отправке сообщения об ошибке для чата {}: {}", chatId, ex.getMessage());
+                log.error("Ошибка при отправке сообщения об ошибке: {}", ex.getMessage());
             }
         }
     }
+
+    private void writeCategoryRow(Sheet sheet, Category category, int level, int[] rowNum, List<Category> allCategories) {
+        Row row = sheet.createRow(rowNum[0]++);
+        String indent = "  ".repeat(level) + (level > 0 ? "└─ " : "");
+        row.createCell(0).setCellValue(indent + category.getName());
+
+        // Применяем стиль для родительских категорий
+        if (level == 0) {
+            CellStyle boldStyle = sheet.getWorkbook().createCellStyle();
+            Font boldFont = sheet.getWorkbook().createFont();
+            boldFont.setBold(true);
+            boldStyle.setFont(boldFont);
+
+            row.getCell(0).setCellStyle(boldStyle);
+        }
+
+        // Рекурсивно обрабатываем подкатегории
+        allCategories.stream()
+                .filter(c -> category.equals(c.getParent()))
+                .forEach(child -> writeCategoryRow(sheet, child, level + 1, rowNum, allCategories));
+    }
+
 }
