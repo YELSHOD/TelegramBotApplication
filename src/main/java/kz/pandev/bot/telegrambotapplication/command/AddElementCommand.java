@@ -3,10 +3,14 @@ package kz.pandev.bot.telegrambotapplication.command;
 import kz.pandev.bot.telegrambotapplication.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+
+import java.util.List;
 
 @Slf4j
 @Component
@@ -22,91 +26,43 @@ public class AddElementCommand implements BotCommand {
 
     @Override
     public void execute(Update update, TelegramLongPollingBot bot) {
-        String fullText = update.getMessage().getText().trim();
         String chatId = update.getMessage().getChatId().toString();
-        String[] parts = fullText.split("\\s+");
+        String fullText = update.getMessage().getText().trim();
 
-        // Убедимся, что первый элемент — это /addelement
-        if (!parts[0].equals("/addelement")) {
-            // Примитивная защита — если пришло нечто типа "➕ Добавить элемент"
-            if (fullText.equals("➕ Добавить элемент")) {
-                // Просто показываем инструкцию
-                sendInstruction(bot, chatId);
-                return;
-            } else {
-                sendError(bot, chatId, "❌ Неверный вызов команды.");
-                return;
-            }
-        }
-
-        try {
-            String response;
-
-            if (parts.length == 1) {
-                sendInstruction(bot, chatId);
-                log.info("Пользователь {} запросил инструкцию по добавлению категории.", chatId);
-                return;
-
-            } else if (parts.length == 2) {
-                String rootCategoryName = parts[1];
-                categoryService.createRootCategory(rootCategoryName);
-                response = "✅ Корневая категория '" + rootCategoryName + "' добавлена.";
-                log.debug("Корневая категория '{}' добавлена пользователем {}.", rootCategoryName, chatId);
-
-            } else if (parts.length == 3) {
-                String parentName = parts[1];
-                String childName = parts[2];
-
-                if (categoryService.existsByName(parentName)) {
-                    categoryService.createChildCategory(parentName, childName);
-                    response = "✅ Дочерняя категория '" + childName + "' для родительской '" + parentName + "' добавлена.";
-                    log.debug("Дочерняя категория '{}' добавлена к '{}' пользователем {}.", childName, parentName, chatId);
-                } else {
-                    response = "⚠️ Родительская категория '" + parentName + "' не найдена.";
-                    log.warn("Не найдена родительская категория '{}' от пользователя {}.", parentName, chatId);
-                }
-
-            } else {
-                response = """
+        if (fullText.equals("/addelement") || fullText.equals("➕ Добавить элемент")) {
+            showCategoryOptions(bot, chatId);
+        } else {
+            sendError(bot, chatId, """
                 ❌ Неправильный формат команды.
-                
-                Используйте:
-                /addelement Категория
-                /addelement Родитель Дочерняя
-                """;
-                log.warn("Неверный формат команды /addelement от пользователя {}", chatId);
-            }
-
-            bot.execute(SendMessage.builder()
-                    .chatId(chatId)
-                    .text(response)
-                    .build());
-
-        } catch (Exception e) {
-            log.error("Ошибка при выполнении команды /addelement для чата {}: {}", chatId, e.getMessage());
-            sendError(bot, chatId, "❌ Ошибка: " + e.getMessage());
+                Нажмите на кнопку и следуйте инструкциям.
+            """);
         }
     }
 
-    private void sendInstruction(TelegramLongPollingBot bot, String chatId) {
-        String response = """
-        ℹ️ Чтобы добавить категорию, используйте один из форматов:
-        
-        ➕ /addelement {ИмяКатегории} – создать корневую категорию
-        ➕ /addelement {Родитель} {ИмяКатегории} – создать дочернюю категорию
-        
-        📌 Примеры:
-        /addelement Продукты
-        /addelement Продукты Овощи
-        """;
+    private void showCategoryOptions(TelegramLongPollingBot bot, String chatId) {
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText("Выберите, что хотите добавить:");
+
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<InlineKeyboardButton> row = List.of(
+                InlineKeyboardButton.builder()
+                        .text("📁 Категорию")
+                        .callbackData("ADD_CATEGORY")  // <-- синхронизировано с CommandDispatcher
+                        .build(),
+                InlineKeyboardButton.builder()
+                        .text("📂 Подкатегорию")
+                        .callbackData("ADD_SUBCATEGORY")  // <-- синхронизировано с CommandDispatcher
+                        .build()
+        );
+        markup.setKeyboard(List.of(row));
+        message.setReplyMarkup(markup);
 
         try {
-            bot.execute(SendMessage.builder()
-                    .chatId(chatId)
-                    .text(response)
-                    .build());
+            bot.execute(message);
+            log.info("Пользователю {} показаны кнопки выбора добавления категории/подкатегории", chatId);
         } catch (Exception e) {
-            log.error("Ошибка при отправке инструкции: {}", e.getMessage());
+            log.error("Ошибка при отправке inline-кнопок: {}", e.getMessage(), e);
         }
     }
 
@@ -116,9 +72,9 @@ public class AddElementCommand implements BotCommand {
                     .chatId(chatId)
                     .text(message)
                     .build());
+            log.warn("Пользователю {} отправлено сообщение об ошибке формата команды", chatId);
         } catch (Exception e) {
-            log.error("Ошибка при отправке сообщения об ошибке для чата {}: {}", chatId, e.getMessage());
+            log.error("Ошибка при отправке сообщения об ошибке: {}", e.getMessage(), e);
         }
     }
-
 }

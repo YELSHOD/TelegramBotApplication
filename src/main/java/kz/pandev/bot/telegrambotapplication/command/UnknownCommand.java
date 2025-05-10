@@ -23,9 +23,21 @@ public class UnknownCommand implements BotCommand {
 
     @Override
     public void execute(Update update, TelegramLongPollingBot bot) {
-        String chatId = update.getMessage().getChatId().toString();
-        String userMessage = update.getMessage().getText();
-        String userName = update.getMessage().getFrom().getUserName();
+        String chatId = null;
+
+        if (update.hasMessage()) {
+            chatId = update.getMessage().getChatId().toString();
+        } else if (update.hasCallbackQuery()) {
+            chatId = update.getCallbackQuery().getMessage().getChatId().toString();
+        }
+
+        if (chatId == null) {
+            log.error("Ошибка: не найден chatId в Update");
+            return;
+        }
+
+        String userMessage = update.hasMessage() ? update.getMessage().getText() : "Callback query received";
+        String userName = update.hasMessage() ? update.getMessage().getFrom().getUserName() : "Unknown";
 
         log.info("Получено сообщение от пользователя: {} | chatId: {} | текст: {}", userName, chatId, userMessage);
 
@@ -75,5 +87,5 @@ public class UnknownCommand implements BotCommand {
             log.error("Ошибка при отправке сообщения пользователю {}", userName, e);
         }
     }
-
 }
+
