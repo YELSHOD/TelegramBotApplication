@@ -4,7 +4,7 @@ import jakarta.annotation.PostConstruct;
 import kz.pandev.bot.telegrambotapplication.enums.UserState;
 import kz.pandev.bot.telegrambotapplication.model.Category;
 import kz.pandev.bot.telegrambotapplication.service.CategoryService;
-import kz.pandev.bot.telegrambotapplication.service.TempInputCache;
+import kz.pandev.bot.telegrambotapplication.cache.TempInputCache;
 import kz.pandev.bot.telegrambotapplication.service.UploadService;
 import kz.pandev.bot.telegrambotapplication.service.UserStateService;
 import lombok.RequiredArgsConstructor;

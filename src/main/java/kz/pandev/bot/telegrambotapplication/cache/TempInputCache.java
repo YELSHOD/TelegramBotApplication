@@ -1,4 +1,4 @@
-package kz.pandev.bot.telegrambotapplication.service;
+package kz.pandev.bot.telegrambotapplication.cache;
 
 import org.springframework.stereotype.Service;
 
