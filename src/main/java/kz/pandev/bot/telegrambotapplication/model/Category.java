@@ -8,7 +8,12 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Сущность категории для построения иерархической структуры.
+ * <p>
+ * Категории могут иметь родителя и множество дочерних категорий,
+ * что позволяет строить дерево категорий.
+ */
 @Entity
 @Data
 @NoArgsConstructor
@@ -22,22 +27,33 @@ public class Category {
 
     private String name;
 
-    // Ссылка на родительскую категорию (для построения иерархии)
+    /**
+     * Родительская категория.
+     * <p>
+     * Если поле равно null — категория считается корневой.
+     */
     @ManyToOne
     private Category parent;
 
-    // Список дочерних категорий — связь один-ко-многим.
-    // mappedBy = "parent" указывает, что владеющая сторона — поле parent
-    // CascadeType.ALL — каскадируем все операции (persist, merge, remove и т.д.)
-    // orphanRemoval = true — если убираем дочерний элемент из списка, он удаляется из БД
+    /**
+     * Список дочерних категорий.
+     * <p>
+     * Связь один-ко-многим с каскадированием всех операций
+     * обеспечивает каскадное удаление дочерних категорий при удалении родителя
+     */
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> children = new ArrayList<>();
 
-
-    // Метод для проверки, является ли категория родительской
+    /**
+     * Проверяет, является ли категория родительской (корневой) —
+     * то есть не имеет родителя и содержит дочерние категории.
+     *
+     * @return true, если категория корневая с потомками, иначе false
+     */
     public boolean isParent() {
-        return parent == null && !children.isEmpty(); // Если нет родителя и есть дочерние категории
+        return parent == null && !children.isEmpty();
     }
+
 
     public Category(String name, Category parent) {
         this.name = name;

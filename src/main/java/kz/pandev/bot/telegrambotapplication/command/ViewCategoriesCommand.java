@@ -11,6 +11,13 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.stream.Collectors;
 
+/**
+ * Команда для просмотра корневых категорий.
+ * <p>
+ * Получает все категории из сервиса, фильтрует корневые (без родителя),
+ * формирует список имен и отправляет его пользователю.
+ * В случае ошибки отправляет сообщение с описанием ошибки.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -18,11 +25,24 @@ public class ViewCategoriesCommand implements BotCommand {
 
     private final CategoryService categoryService;
 
+    /**
+     * Возвращает строковое имя команды.
+     * @return имя команды "/viewcategories"
+     */
     @Override
     public String getCommand() {
         return "/viewcategories";
     }
 
+    /**
+     * Обрабатывает входящее обновление Telegram.
+     * Получает chatId из сообщения, запрашивает список категорий,
+     * фильтрует корневые, отправляет список пользователю.
+     * При ошибках логирует и информирует пользователя.
+     *
+     * @param update объект обновления от Telegram API
+     * @param bot    бот для отправки сообщений
+     */
     @Override
     public void execute(Update update, TelegramLongPollingBot bot) {
         String chatId = update.getMessage().getChatId().toString();
@@ -45,7 +65,6 @@ public class ViewCategoriesCommand implements BotCommand {
                     .text(response)
                     .build());
 
-            // Логирую успешное выполнение команды
             log.info("Команда /viewcategories успешно выполнена для чата {}", chatId);
 
         } catch (Exception e) {
@@ -62,4 +81,3 @@ public class ViewCategoriesCommand implements BotCommand {
     }
 
 }
-

@@ -22,7 +22,7 @@ public class TreeBuilder {
                 .toList();
 
         // Корневой узел дерева (не из БД, просто заголовок)
-        TreeNode root = new TreeNode("Категории в структурированном виде дерева");
+        TreeNode root = new TreeNode("Категории в структурированном виде дерева \n");
 
         for (Category category : rootCategories) {
             TreeNode childNode = buildSubTree(category);

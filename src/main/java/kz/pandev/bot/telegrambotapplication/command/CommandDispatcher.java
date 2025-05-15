@@ -23,6 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Основной диспетчер команд Telegram-бота.
+ * Отвечает за маршрутизацию входящих обновлений (сообщений и callback-запросов),
+ * выполнение команд, управление пользовательскими состояниями и генерацию inline-кнопок.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -37,6 +42,9 @@ public class CommandDispatcher {
     private final CategoryService categoryService;
     private final TempInputCache tempInputCache;
 
+    /**
+     * Инициализирует мапу доступных команд после внедрения зависимостей.
+     */
     @PostConstruct
     private void init() {
         for (BotCommand cmd : commands) {
@@ -46,6 +54,12 @@ public class CommandDispatcher {
         log.info("Инициализация CommandDispatcher завершена. Всего команд: {}", commandMap.size());
     }
 
+    /**
+     * Основная точка входа для обработки обновлений Telegram.
+     *
+     * @param update Объект обновления Telegram
+     * @param bot    TelegramLongPollingBot, через который отправляются ответы
+     */
     public void dispatch(Update update, TelegramLongPollingBot bot) {
         if (update.hasMessage()) {
             handleMessage(update, bot);
@@ -56,6 +70,9 @@ public class CommandDispatcher {
         }
     }
 
+    /**
+     * Обрабатывает входящие сообщения от пользователя.
+     */
     private void handleMessage(Update update, TelegramLongPollingBot bot) {
         Message msg = update.getMessage();
         String chatId = msg.getChatId().toString();
@@ -104,6 +121,9 @@ public class CommandDispatcher {
         }
     }
 
+    /**
+     * Обрабатывает callback-запросы от inline-кнопок.
+     */
     private void handleCallback(Update update, TelegramLongPollingBot bot) {
         CallbackQuery cb = update.getCallbackQuery();
         String data = cb.getData();
@@ -159,6 +179,9 @@ public class CommandDispatcher {
         }
     }
 
+    /**
+     * Показывает пользователю список корневых категорий с постраничной навигацией.
+     */
     private void showParentSelection(TelegramLongPollingBot bot, String chatId, int page) {
         List<Category> roots = categoryService.getAllCategories().stream()
                 .filter(c -> c.getParent() == null)
@@ -201,10 +224,16 @@ public class CommandDispatcher {
         );
     }
 
+    /**
+     * Отправляет сообщение без клавиатуры.
+     */
     private void send(TelegramLongPollingBot bot, String chatId, String text) {
         send(bot, chatId, text, null);
     }
 
+    /**
+     * Отправляет сообщение с возможной клавиатурой.
+     */
     private void send(TelegramLongPollingBot bot, String chatId, String text, InlineKeyboardMarkup mk) {
         try {
             SendMessage m = SendMessage.builder()
@@ -218,6 +247,9 @@ public class CommandDispatcher {
         }
     }
 
+    /**
+     * Обрабатывает ввод названия новой корневой категории.
+     */
     private void processRootCategory(String text, String chatId, TelegramLongPollingBot bot) {
         try {
             categoryService.createRootCategory(text);
@@ -230,6 +262,9 @@ public class CommandDispatcher {
     }
 
 
+    /**
+     * Обрабатывает ввод названия новой подкатегории.
+     */
     private void processChildCategory(String text, String chatId, TelegramLongPollingBot bot) {
         Long chatIdLong = Long.valueOf(chatId);
         String parentName = tempInputCache.get(chatIdLong);
@@ -250,5 +285,4 @@ public class CommandDispatcher {
             tempInputCache.clear(chatIdLong);
         }
     }
-
 }

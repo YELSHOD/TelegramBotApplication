@@ -15,7 +15,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Команда для удаления категорий и их подкатегорий через интерактивное меню с пагинацией.
+ * <p>
+ * Поддерживает обработку callback-запросов с навигацией по страницам категорий,
+ * выбором категории, подкатегории и подтверждением удаления.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -24,11 +29,26 @@ public class RemoveElementCommand implements BotCommand {
     private final CategoryService categoryService;
     private static final int ITEMS_PER_PAGE = 5;
 
+    /**
+     * Возвращает строку команды, с которой связан данный обработчик.
+     *
+     * @return строка команды "/removeelement"
+     */
     @Override
     public String getCommand() {
         return "/removeelement";
     }
 
+    /**
+     * Обрабатывает входящее обновление от Telegram.
+     * <p>
+     * Если обновление содержит callback-запрос, обрабатывает навигацию по категориям,
+     * выбор категории или подкатегории и удаление выбранного элемента.
+     * Если сообщение содержит текстовую команду "➖ Удалить элемент", запускает показ корневых категорий.
+     *
+     * @param update объект обновления от Telegram
+     * @param bot    бот, через который происходит отправка сообщений и ответов
+     */
     @Override
     public void execute(Update update, TelegramLongPollingBot bot) {
         if (update.hasCallbackQuery()) {
@@ -94,6 +114,13 @@ public class RemoveElementCommand implements BotCommand {
         }
     }
 
+    /**
+     * Отображает список корневых категорий с пагинацией.
+     *
+     * @param bot    бот для отправки сообщений
+     * @param chatId ID чата, куда отправлять сообщение
+     * @param page   номер страницы для отображения
+     */
     private void showCategorySelection(TelegramLongPollingBot bot, String chatId, int page) {
         List<Category> roots = categoryService.getAllCategories().stream()
                 .filter(c -> c.getParent() == null)
@@ -109,7 +136,7 @@ public class RemoveElementCommand implements BotCommand {
             rows.add(List.of(
                     InlineKeyboardButton.builder()
                             .text(cat.getName())
-                            .callbackData("SELECT_CATEGORY:" + cat.getId()) // <-- Исправлено: используй ID, а не название
+                            .callbackData("SELECT_CATEGORY:" + cat.getId())
                             .build()
             ));
         }
@@ -138,6 +165,13 @@ public class RemoveElementCommand implements BotCommand {
         );
     }
 
+    /**
+     * Отображает список подкатегорий выбранной категории с кнопкой удаления всей категории.
+     *
+     * @param bot    бот для отправки сообщений
+     * @param chatId ID чата, куда отправлять сообщение
+     * @param parent выбранная родительская категория
+     */
     private void showSubcategorySelection(TelegramLongPollingBot bot, String chatId, Category parent) {
         List<Category> subs = categoryService.getAllCategories().stream()
                 .filter(c -> c.getParent() != null && c.getParent().getId().equals(parent.getId()))
@@ -152,7 +186,7 @@ public class RemoveElementCommand implements BotCommand {
             rows.add(List.of(
                     InlineKeyboardButton.builder()
                             .text(c.getName())
-                            .callbackData("DELETE_SUBCATEGORY:" + c.getId() + ":" + parent.getId()) // <-- Используем ID подкатегории и родителя
+                            .callbackData("DELETE_SUBCATEGORY:" + c.getId() + ":" + parent.getId())
                             .build()
             ));
         }
@@ -160,7 +194,7 @@ public class RemoveElementCommand implements BotCommand {
         rows.add(List.of(
                 InlineKeyboardButton.builder()
                         .text("🗑️ Удалить категорию")
-                        .callbackData("DELETE_CATEGORY:" + parent.getId()) // <-- Используем ID родительской категории
+                        .callbackData("DELETE_CATEGORY:" + parent.getId())
                         .build()
         ));
 
@@ -168,6 +202,14 @@ public class RemoveElementCommand implements BotCommand {
         send(bot, chatId, header.toString(), mk);
     }
 
+    /**
+     * Отправляет сообщение с инлайн-клавиатурой.
+     *
+     * @param bot    бот для отправки сообщения
+     * @param chatId ID чата, куда отправлять сообщение
+     * @param text   текст сообщения
+     * @param mk     инлайн-клавиатура для выбора
+     */
     private void send(TelegramLongPollingBot bot, String chatId, String text, InlineKeyboardMarkup mk) {
         try {
             bot.execute(SendMessage.builder()
@@ -181,6 +223,13 @@ public class RemoveElementCommand implements BotCommand {
         }
     }
 
+    /**
+     * Отправляет ответ на callback-запрос с текстом уведомления.
+     *
+     * @param bot    бот для отправки ответа
+     * @param update обновление с callback-запросом
+     * @param text   текст уведомления для пользователя
+     */
     private void sendCallback(TelegramLongPollingBot bot, Update update, String text) {
         try {
             bot.execute(AnswerCallbackQuery.builder()

@@ -12,6 +12,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 
 import java.util.List;
 
+/**
+ * Команда /addelement.
+ * Отображает пользователю inline-кнопки для добавления новой категории или подкатегории.
+ * <p>
+ * Ожидает ввод в виде команды или клика по кнопке "➕ Добавить элемент".
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -19,11 +25,22 @@ public class AddElementCommand implements BotCommand {
 
     private final CategoryService categoryService;
 
+    /**
+     * Возвращает строку команды, с которой связан данный обработчик.
+     */
     @Override
     public String getCommand() {
         return "/addelement";
     }
 
+    /**
+     * Выполняет логику команды.
+     * Если пользователь ввёл команду правильно — показываются inline-кнопки выбора типа элемента.
+     * В противном случае отправляется сообщение об ошибке.
+     *
+     * @param update объект обновления от Telegram, содержащий сообщение от пользователя
+     * @param bot экземпляр TelegramLongPollingBot, через который отправляются ответы пользователю
+     */
     @Override
     public void execute(Update update, TelegramLongPollingBot bot) {
         String chatId = update.getMessage().getChatId().toString();
@@ -39,6 +56,10 @@ public class AddElementCommand implements BotCommand {
         }
     }
 
+
+    /**
+     * Отправляет пользователю inline-кнопки с вариантами: добавить категорию или подкатегорию.
+     */
     private void showCategoryOptions(TelegramLongPollingBot bot, String chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
@@ -66,6 +87,9 @@ public class AddElementCommand implements BotCommand {
         }
     }
 
+    /**
+     * Отправляет сообщение об ошибке при некорректном формате команды.
+     */
     private void sendError(TelegramLongPollingBot bot, String chatId, String message) {
         try {
             bot.execute(SendMessage.builder()
