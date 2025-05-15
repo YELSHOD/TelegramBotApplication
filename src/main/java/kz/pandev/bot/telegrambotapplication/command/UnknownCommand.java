@@ -1,26 +1,44 @@
 package kz.pandev.bot.telegrambotapplication.command;
 
+import kz.pandev.bot.telegrambotapplication.util.KeyboardFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * Обработчик неизвестной команды Telegram-бота.
+ * <p>
+ * Выполняется, когда пользователь отправляет сообщение, не соответствующее ни одной зарегистрированной команде.
+ * Отправляет стандартный ответ с клавиатурой основного меню.
+ */
 @Slf4j
 @Component
 public class UnknownCommand implements BotCommand {
 
+    /**
+     * Возвращает имя команды. В данном случае это маркер "unknown", используемый для обработки неподдерживаемых команд.
+     *
+     * @return строка "unknown"
+     */
     @Override
     public String getCommand() {
         return "unknown";
     }
 
+    /**
+     * Выполняет обработку неизвестной команды:
+     * <ul>
+     *     <li>Определяет chatId из сообщения или callback-запроса</li>
+     *     <li>Логирует полученное сообщение</li>
+     *     <li>Отправляет ответ с клавиатурой основного меню</li>
+     * </ul>
+     *
+     * @param update объект {@link Update} от Telegram API, содержащий входящее сообщение или callback
+     * @param bot    экземпляр {@link TelegramLongPollingBot} для отправки ответа
+     */
     @Override
     public void execute(Update update, TelegramLongPollingBot bot) {
         String chatId = null;
@@ -50,35 +68,8 @@ public class UnknownCommand implements BotCommand {
         message.setChatId(chatId);
         message.setText(responseText);
 
-        // Клавиатура
-        ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
-        keyboard.setResizeKeyboard(true);
-        keyboard.setOneTimeKeyboard(false);
-
-        List<KeyboardRow> rows = new ArrayList<>();
-
-        KeyboardRow row1 = new KeyboardRow();
-        row1.add("📘 Справка");
-        row1.add("➕ Добавить элемент");
-
-        KeyboardRow row2 = new KeyboardRow();
-        row2.add("🌳 Дерево категорий");
-        row2.add("➖ Удалить элемент");
-
-        KeyboardRow row3 = new KeyboardRow();
-        row3.add("👁 Просмотр категорий");
-        row3.add("📊 Импорт Excel");
-
-        KeyboardRow row4 = new KeyboardRow();
-        row4.add("📥 Скачать Excel");
-
-        rows.add(row1);
-        rows.add(row2);
-        rows.add(row3);
-        rows.add(row4);
-
-        keyboard.setKeyboard(rows);
-        message.setReplyMarkup(keyboard);
+        // Устанавливаем основное меню клавиатуры
+        message.setReplyMarkup(KeyboardFactory.mainMenuKeyboard());
 
         try {
             bot.execute(message);
@@ -88,4 +79,5 @@ public class UnknownCommand implements BotCommand {
         }
     }
 }
+
 

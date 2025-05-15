@@ -10,6 +10,12 @@ import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+/**
+ * Команда для обработки загрузки Excel-файла с категориями.
+ * <p>
+ * Если пользователь отправляет документ формата .xlsx, он обрабатывается через {@link UploadService}.
+ * Если файл отсутствует — отправляется шаблон и инструкция по формату.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -17,11 +23,26 @@ public class UploadCommand implements BotCommand {
 
     private final UploadService uploadService;
 
+    /**
+     * Возвращает команду, на которую реагирует этот обработчик.
+     *
+     * @return строка команды, например "/upload"
+     */
     @Override
     public String getCommand() {
         return "/upload";
     }
 
+    /**
+     * Выполняет логику обработки команды /upload.
+     * <ul>
+     *     <li>Если прикреплён Excel-файл — передаёт его на обработку в {@link UploadService#processExcelFile}.</li>
+     *     <li>Если файл не прикреплён — отправляет шаблон Excel и пояснение.</li>
+     * </ul>
+     *
+     * @param update Объект {@link Update}, полученный от Telegram API
+     * @param bot    Экземпляр {@link TelegramLongPollingBot}, через который отправляются ответы
+     */
     @Override
     public void execute(Update update, TelegramLongPollingBot bot) {
         Message message = update.getMessage();
@@ -68,6 +89,13 @@ public class UploadCommand implements BotCommand {
         }
     }
 
+    /**
+     * Вспомогательный метод для безопасной отправки текстового сообщения в Telegram.
+     *
+     * @param bot    Экземпляр Telegram-бота
+     * @param chatId ID чата, куда отправить сообщение
+     * @param text   Текст сообщения
+     */
     private void send(TelegramLongPollingBot bot, String chatId, String text) {
         try {
             bot.execute(SendMessage.builder()
