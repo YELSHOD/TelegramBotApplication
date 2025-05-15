@@ -22,7 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +33,14 @@ public class UploadService {
 
     private final CategoryRepository categoryRepository;
 
+    /**
+     * Обрабатывает Excel-файл, загруженный пользователем, и сохраняет содержащиеся в нём категории и подкатегории.
+     * Показывает пользователю прогресс выполнения и отправляет отчёт об успешно добавленных и пропущенных (дублирующихся) записях.
+     *
+     * @param fileId идентификатор файла, предоставленный Telegram API
+     * @param chatId ID чата, в который будут отправляться сообщения
+     * @param bot    экземпляр Telegram-бота для выполнения команд
+     */
     public void processExcelFile(String fileId, String chatId, TelegramLongPollingBot bot) {
         try {
             File file = bot.execute(new GetFile(fileId));
@@ -152,7 +159,13 @@ public class UploadService {
         }
     }
 
-    // Отправка шаблона
+    /**
+     * Генерирует шаблон Excel-файла для импорта категорий и отправляет его пользователю.
+     * Шаблон содержит примеры категорий и подкатегорий, отформатирован с выравниванием и заголовками.
+     *
+     * @param chatId ID чата, куда будет отправлен файл
+     * @param bot    экземпляр Telegram-бота для выполнения команды отправки
+     */
     public void sendExcelTemplate(String chatId, TelegramLongPollingBot bot) {
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
             var sheet = workbook.createSheet("Categories");

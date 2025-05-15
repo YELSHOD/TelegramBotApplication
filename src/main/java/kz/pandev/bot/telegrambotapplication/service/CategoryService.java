@@ -18,12 +18,23 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    // Проверка существования категории по имени
+    /**
+     * Проверяет наличие категории с указанным именем.
+     *
+     * @param categoryName имя категории
+     * @return true, если категория существует; иначе false
+     */
     public boolean existsByName(String categoryName) {
         return categoryRepository.findByName(categoryName).isPresent();
     }
 
-    // Создание корневой категории
+    /**
+     * Создаёт новую корневую категорию.
+     *
+     * @param name имя новой категории
+     * @return созданная категория
+     * @throws IllegalArgumentException если категория с таким именем уже существует
+     */
     public Category createRootCategory(String name) {
         if (categoryRepository.existsByName(name)) {
             throw new IllegalArgumentException("Название категории уже существует");
@@ -33,7 +44,14 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
-    // Создание дочерней категории
+    /**
+     * Создаёт дочернюю категорию с привязкой к родительской.
+     *
+     * @param parentName имя родительской категории
+     * @param childName имя новой дочерней категории
+     * @return созданная дочерняя категория
+     * @throws IllegalArgumentException если родительская категория не найдена или имя уже занято
+     */
     public Category createChildCategory(String parentName, String childName) {
         Category parent = categoryRepository.findByName(parentName)
                 .orElseThrow(() -> new IllegalArgumentException("Родительская категория не найдена"));
@@ -48,41 +66,55 @@ public class CategoryService {
         return categoryRepository.save(child);
     }
 
-    // Удаление категории по имени
-    public void deleteCategoryByName(String name) {
-        Category category = categoryRepository.findByName(name)
-                .orElseThrow(() -> new IllegalArgumentException("Категория не найдена"));
-        categoryRepository.delete(category);
-    }
 
-    // Метод, выбрасывающий исключение при отсутствии
+    /**
+     * Ищет категорию по ID и выбрасывает исключение, если не найдена.
+     *
+     * @param id идентификатор категории
+     * @return найденная категория
+     * @throws IllegalArgumentException если категория не найдена
+     */
     public Category findById(Long id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Категория с ID " + id + " не найдена"));
     }
 
-    // Метод, возвращающий null при отсутствии (удобен для безопасной проверки)
+    /**
+     * Получает категорию по ID или возвращает null, если не найдена.
+     *
+     * @param id идентификатор категории
+     * @return найденная категория или null
+     */
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id).orElse(null);
     }
 
-    // Удаление категории по ID
+    /**
+     * Удаляет категорию по ID.
+     *
+     * @param id идентификатор категории
+     */
     public void deleteCategoryById(Long id) {
         Category category = findById(id);
         categoryRepository.delete(category);
     }
 
-    // Получение категории по имени
-    public Category getCategoryByName(String name) {
-        return categoryRepository.findByName(name).orElse(null);
-    }
 
-    // Получение всех категорий
+    /**
+     * Получает список всех категорий.
+     *
+     * @return список всех категорий
+     */
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
 
-    // Получение всех категорий в виде DTO
+    /**
+     * Получает список всех категорий в виде DTO.
+     * Используется для представления категорий в упрощённой форме.
+     *
+     * @return список DTO категорий
+     */
     public List<CategoryDto> getAllCategoryDtos() {
         List<Category> categories = categoryRepository.findAll();
         return categories.stream().map(category -> {
@@ -93,10 +125,6 @@ public class CategoryService {
         }).collect(Collectors.toList());
     }
 
-    // Сохранение категории
-    public void saveCategory(Category category) {
-        categoryRepository.save(category);
-    }
 
     // Получение Optional по имени
     public Optional<Category> findByName(String name) {

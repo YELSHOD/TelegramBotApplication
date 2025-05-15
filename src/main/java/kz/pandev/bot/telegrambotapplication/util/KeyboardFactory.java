@@ -6,12 +6,26 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Фабрика для создания клавиатур Telegram-бота.
+ * Предоставляет методы для генерации готовых {@link ReplyKeyboardMarkup} с предопределённой структурой.
+ */
 public class KeyboardFactory {
 
+    /**
+     * Приватный конструктор. Класс не предназначен для инстанцирования.
+     * Используется как utility-класс.
+     */
     private KeyboardFactory() {
         // закрываем конструктор
     }
 
+    /**
+     * Создаёт клавиатуру главного меню Telegram-бота.
+     * Включает команды: справка, добавление, удаление, просмотр и работа с Excel.
+     *
+     * @return объект {@link ReplyKeyboardMarkup}, готовый к отправке пользователю
+     */
     public static ReplyKeyboardMarkup mainMenuKeyboard() {
         ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
         keyboard.setResizeKeyboard(true);

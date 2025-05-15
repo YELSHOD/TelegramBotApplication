@@ -5,6 +5,10 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Модель узла дерева категорий.
+ * Используется для представления категорий в иерархической структуре.
+ */
 @Data
 public class TreeNode {
     private String name;
