@@ -219,15 +219,16 @@ public class CommandDispatcher {
     }
 
     private void processRootCategory(String text, String chatId, TelegramLongPollingBot bot) {
-        Category category = new Category();
-        category.setName(text);
-        category.setParent(null);
-
-        categoryService.saveCategory(category);
-        userStateService.clearStates(chatId);
-
-        send(bot, chatId, "✅ Корневая категория успешно добавлена: \"" + text + "\"");
+        try {
+            categoryService.createRootCategory(text);
+            send(bot, chatId, "✅ Корневая категория успешно добавлена: \"" + text + "\"");
+        } catch (IllegalArgumentException e) {
+            send(bot, chatId, "❌ Ошибка: " + e.getMessage());
+        } finally {
+            userStateService.clearStates(chatId);
+        }
     }
+
 
     private void processChildCategory(String text, String chatId, TelegramLongPollingBot bot) {
         Long chatIdLong = Long.valueOf(chatId);
@@ -239,23 +240,15 @@ public class CommandDispatcher {
             return;
         }
 
-        Category parent = categoryService.findByName(parentName).orElse(null);
-        if (parent == null) {
-            send(bot, chatId, "❌ Родительская категория \"" + parentName + "\" не найдена.");
+        try {
+            categoryService.createChildCategory(parentName, text);
+            send(bot, chatId, "✅ Подкатегория \"" + text + "\" успешно добавлена к категории \"" + parentName + "\"");
+        } catch (IllegalArgumentException e) {
+            send(bot, chatId, "❌ Ошибка: " + e.getMessage());
+        } finally {
             userStateService.clearStates(chatId);
-            return;
+            tempInputCache.clear(chatIdLong);
         }
-
-        Category subcategory = new Category();
-        subcategory.setName(text);
-        subcategory.setParent(parent);
-
-        categoryService.saveCategory(subcategory);
-        userStateService.clearStates(chatId);
-        tempInputCache.clear(chatIdLong);
-
-        send(bot, chatId, "✅ Подкатегория \"" + text + "\" успешно добавлена к категории \"" + parentName + "\"");
-        userStateService.clearStates(chatId);
-
     }
+
 }
